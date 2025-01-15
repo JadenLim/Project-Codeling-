@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Data Analytics Portfolio</title>
+  <!-- Mobile Responsiveness -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Load Chart.js from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* RESET */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* THEME VARIABLES */
+    :root {
+      /* Light Theme */
+      --bg-color: #f5f7f9;
+      --text-color: #333;
+      --card-bg: #ffffff;
+      --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      /* Dark Theme */
+      --bg-color-dark: #2b2b2b;
+      --text-color-dark: #f5f7f9;
+      --card-bg-dark: #3a3a3a;
+      --card-shadow-dark: 0 2px 8px rgba(0, 0, 0, 0.6);
+
+      --transition-speed: 0.3s;
+    }
+
+    /* BODY defaults to Light Theme */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color var(--transition-speed), color var(--transition-speed);
+    }
+    body.dark-mode {
+      background-color: var(--bg-color-dark);
+      color: var(--text-color-dark);
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 1rem 2rem;
+      border-bottom: 1px solid #e0e0e0;
+      transition: background var(--transition-speed);
+    }
+    body.dark-mode .header {
+      background: var(--card-bg-dark);
+      border-bottom: 1px solid #444;
+    }
+    .header .logo h1 {
+      font-size: 1.5rem;
+      margin: 0;
+    }
+
+    /* THEME TOGGLE ICON */
+    .theme-toggle {
+      width: 32px;
+      height: 32px;
+      margin-right: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .theme-toggle img {
+      width: 24px;
+      height: 24px;
+      transition: filter var(--transition-speed);
+    }
+
+    /* SEARCH BAR */
+    .search-box {
+      width: 200px;
+      max-width: 90%;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      border: 1px solid #ccc;
+      border-radius: 50px;
+      outline: none;
+      text-align: center;
+      transition: all 0.3s ease;
+      margin-right: 1rem;
+    }
+    .search-box:hover {
+      width: 240px;
+      border-color: #999;
+    }
+
+    /* CONTACT BUTTON */
+    .contact-btn {
+      padding: 0.5rem 1rem;
+      background: #0052cc;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .contact-btn:hover {
+      background: #003d99;
+    }
+
+    /* HEADER -> container for top-right controls */
+    .right-controls {
+      display: flex;
+      align-items: center;
+    }
+
+    /* MAIN DASHBOARD LAYOUT */
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      grid-gap: 1.5rem;
+      padding: 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: var(--card-shadow);
+      padding: 1rem;
+      transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+    }
+    body.dark-mode .card {
+      background: var(--card-bg-dark);
+      box-shadow: var(--card-shadow-dark);
+    }
+    .card h2 {
+      margin-bottom: 1rem;
+    }
+
+    /* FOOTER */
+    .footer {
+      background: var(--card-bg);
+      text-align: center;
+      padding: 1rem;
+      border-top: 1px solid #e0e0e0;
+      margin-top: 2rem;
+      transition: background-color var(--transition-speed);
+    }
+    body.dark-mode .footer {
+      background: var(--card-bg-dark);
+      border-top: 1px solid #444;
+    }
+
+    /* PROJECT PLACEHOLDERS (3 items) */
+    .project-card {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 150px;
+      text-align: center;
+      background: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: var(--card-shadow);
+      transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+    }
+    body.dark-mode .project-card {
+      background: var(--card-bg-dark);
+      box-shadow: var(--card-shadow-dark);
+    }
+
+    /* Chart Sizing (slightly bigger for visibility) */
+    canvas {
+      max-width: 100%;
+      height: 350px; 
+    }
+
+    /* MODAL for CONTACT (4x Bigger) */
+    .modal-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none; /* Hidden by default */
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .modal-bg.show {
+      display: flex; /* Show the modal */
+    }
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 2rem;
+      width: 1200px; /* 4x bigger */
+      max-width: 90%;
+      text-align: center;
+      position: relative;
+      box-shadow: var(--card-shadow);
+      transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+    }
+    body.dark-mode .modal-content {
+      background: var(--card-bg-dark);
+      box-shadow: var(--card-shadow-dark);
+      color: var(--text-color-dark);
+    }
+    .close-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      background: none;
+      border: none;
+    }
+    .resume-preview {
+      width: 100%;
+      height: 700px; 
+      margin-top: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .icon-links {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    /* 3x bigger icons */
+    .icon-links a {
+      text-decoration: none;
+      color: inherit;
+      font-size: 3.6rem; 
+    }
+
+  </style>
+</head>
+<body><!-- Now defaulting to LIGHT THEME, no dark-mode class -->
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <h1>Chaemin Lim</h1>
+    </div>
+    <div class="right-controls">
+      <!-- THEME TOGGLE ICON -->
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+        <!-- Start with sun icon for light mode -->
+        <img src="https://cdn-icons-png.flaticon.com/512/869/869869.png" alt="Theme Toggle" id="themeIcon"/>
+      </div>
+
+      <!-- SEARCH BAR -->
+      <input 
+        type="text" 
+        class="search-box" 
+        placeholder="Search Projects..." 
+        onclick="searchClicked()"
+        title="Click to view project"
+      />
+      <!-- CONTACT BUTTON -->
+      <button class="contact-btn" onclick="openContactModal()">Contact</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="dashboard-container">
+    
+    <!-- Card: Education Radar Chart -->
+    <section class="card">
+      <h2>Education Overview</h2>
+      <p>BS (RIT MIS) vs MS (Emory MSBA)</p>
+      <canvas id="educationChart"></canvas>
+    </section>
+
+    <!-- Card: Aptitude (Horizontal Bar Chart) -->
+    <section class="card">
+      <h2>Aptitude for Area of Interest</h2>
+      <canvas id="aptitudeChart"></canvas>
+    </section>
+
+    <!-- Card: Domain Interests (Donut Chart) -->
+    <section class="card">
+      <h2>Domain Interests</h2>
+      <p>Healthcare, Retail, Financial, Construction, Sales</p>
+      <canvas id="domainChart"></canvas>
+    </section>
+
+    <!-- Three blank placeholders BELOW the three blocks -->
+    <section class="card project-card">
+      <h3>Project Placeholder 1</h3>
+    </section>
+    <section class="card project-card">
+      <h3>Project Placeholder 2</h3>
+    </section>
+    <section class="card project-card">
+      <h3>Project Placeholder 3</h3>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>&copy; 2025 Chaemin Lim. All rights reserved.</p>
+  </footer>
+
+  <!-- MODAL BACKGROUND & CONTENT -->
+  <div class="modal-bg" id="contactModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeContactModal()">✕</button>
+      <h2>My Resume</h2>
+      <!-- PDF preview via iframe (replace src with your actual PDF link) -->
+      <iframe 
+        class="resume-preview"
+        src="Chaemin Lim - Resume 2024.pdf"
+        frameborder="0"
+      ></iframe>
+
+      <p style="margin-top:1rem;">Download or view full resume below</p>
+      <!-- Icon links (3x bigger) -->
+      <div class="icon-links">
+        <a href="mailto:your.email@gmail.com" title="Email Me">&#9993;</a>
+        <a href="https://www.linkedin.com/in/your-profile" title="LinkedIn" target="_blank">&#128100;</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- INLINE JAVASCRIPT -->
+  <script>
+    // 1) "Click to view project" function 
+    function searchClicked() {
+      alert('You clicked the search bar! (Could redirect to a projects page.)');
+    }
+
+    // 2) Contact Modal open/close
+    const modalBg = document.getElementById('contactModal');
+    function openContactModal() {
+      modalBg.classList.add('show');
+    }
+    function closeContactModal() {
+      modalBg.classList.remove('show');
+    }
+
+    // 3) Theme Toggle
+    let isDarkMode = false; // Default to light theme
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      isDarkMode = !isDarkMode;
+      const icon = document.getElementById('themeIcon');
+      if (isDarkMode) {
+        // Switch to moon icon
+        icon.src = 'https://cdn-icons-png.flaticon.com/512/3222/3222800.png';
+      } else {
+        // Switch to sun icon
+        icon.src = 'https://cdn-icons-png.flaticon.com/512/869/869869.png';
+      }
+    }
+
+    // 4) Chart.js Defaults (Bigger Fonts)
+    Chart.defaults.font.size = 16;
+    Chart.defaults.plugins.title.font.size = 18;
+    Chart.defaults.plugins.legend.labels.boxWidth = 30;
+    Chart.defaults.plugins.legend.labels.font.size = 16;
+    Chart.defaults.elements.bar.borderWidth = 1;
+
+    // 5) Create Charts on Window Load
+    window.onload = function() {
+      // A) Education Radar Chart
+      const ctxEducation = document.getElementById('educationChart').getContext('2d');
+      new Chart(ctxEducation, {
+        type: 'radar',
+        data: {
+          labels: ['Quantitative', 'Technical', 'Business', 'Analytics Tools', 'Communication'],
+          datasets: [
+            {
+              label: 'RIT MIS (BS)',
+              data: [65, 70, 80, 75, 85],
+              fill: true,
+              backgroundColor: 'rgba(54,162,235,0.2)',
+              borderColor: 'rgba(54,162,235,1)',
+              pointBackgroundColor: 'rgba(54,162,235,1)'
+            },
+            {
+              label: 'Emory MSBA (MS)',
+              data: [80, 85, 75, 90, 80],
+              fill: true,
+              backgroundColor: 'rgba(255,205,86,0.2)',
+              borderColor: 'rgba(255,205,86,1)',
+              pointBackgroundColor: 'rgba(255,205,86,1)'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' }
+          },
+          scales: {
+            r: {
+              angleLines: { display: true },
+              suggestedMin: 0,
+              suggestedMax: 100,
+              ticks: { stepSize: 20 }
+            }
+          }
+        }
+      });
+
+      // B) Aptitude (Horizontal Bar)
+      const ctxAptitude = document.getElementById('aptitudeChart').getContext('2d');
+      new Chart(ctxAptitude, {
+        type: 'bar',
+        data: {
+          labels: [
+            'Data Analytics', 
+            'Machine Learning', 
+            'Visualization', 
+            'Statistics', 
+            'Programming'
+          ],
+          datasets: [{
+            label: 'Aptitude Level',
+            data: [85, 90, 80, 88, 92],
+            backgroundColor: [
+              '#3e95cd',
+              '#8e5ea2',
+              '#3cba9f',
+              '#e8c3b9',
+              '#c45850'
+            ]
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          scales: {
+            x: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Proficiency (%)'
+              }
+            }
+          },
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+
+      // C) Domain Interests (Donut Chart)
+      const ctxDomain = document.getElementById('domainChart').getContext('2d');
+      new Chart(ctxDomain, {
+        type: 'doughnut',
+        data: {
+          labels: ['Healthcare', 'Retail', 'Financial', 'Construction', 'Sales'],
+          datasets: [{
+            label: 'Interest Distribution',
+            data: [70, 80, 75, 65, 60], 
+            backgroundColor: [
+              '#4bc0c0',
+              '#ff9f40',
+              '#9966ff',
+              '#ff6384',
+              '#36a2eb'
+            ],
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' }
+          },
+          cutout: '50%' // donut hole size
+        }
+      });
+    };
+  </script>
+</body>
+</html>
